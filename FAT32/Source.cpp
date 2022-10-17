@@ -1,7 +1,7 @@
 #include "Header.h"
 
 
-int64_t Get_Value_Little_Endian(BYTE* sector, int offset, int number)
+int64_t getValue(BYTE* sector, int offset, int number)
 {
     int64_t k = 0;
     memcpy(&k, sector + offset, number);
@@ -28,12 +28,12 @@ FAT32 getValues(LPCWSTR drive)
     f.FAT = new BYTE[512];
     int i = ReadSector(f.drive, 0, f.BootSector);
 
-    f.bytes_per_sector = Get_Value_Little_Endian(f.BootSector, 0x0B, 2);
-    f.sectors_per_cluster = Get_Value_Little_Endian(f.BootSector, 0x0D, 1);
-    f.sectors_of_bootsector = Get_Value_Little_Endian(f.BootSector, 0x0E, 2);
-    f.numbers_of_fats = Get_Value_Little_Endian(f.BootSector, 0x10, 1);
-    f.sector_of_RDET = (Get_Value_Little_Endian(f.BootSector, 0x11, 2) * 32) / f.bytes_per_sector;
-    f.sector_per_FAT = Get_Value_Little_Endian(f.BootSector, 0x24, 4);
+    f.bytes_per_sector = getValue(f.BootSector, 0x0B, 2);
+    f.sectors_per_cluster = getValue(f.BootSector, 0x0D, 1);
+    f.sectors_of_bootsector = getValue(f.BootSector, 0x0E, 2);
+    f.numbers_of_fats = getValue(f.BootSector, 0x10, 1);
+    f.sector_of_RDET = (getValue(f.BootSector, 0x11, 2) * 32) / f.bytes_per_sector;
+    f.sector_per_FAT = getValue(f.BootSector, 0x24, 4);
     f.first_sector_of_data = f.sectors_of_bootsector + f.numbers_of_fats * f.sector_per_FAT + f.sector_of_RDET;
 
     return f;
