@@ -1,29 +1,36 @@
-#pragma once
-#include <iostream>
 #include <windows.h>
-#include <stdio.h>
-#include <string>
-#include <iomanip>
+#include <iostream>
+#include<stdio.h>
+#include<vector>
+#include <algorithm>
+#include<sstream>
+#include<iomanip>
+#include<cmath>
+#include <fstream>
 using namespace std;
 
-int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512]);
+#define COL 100
 
-struct FAT32 {
-    LPCWSTR drive;
-    unsigned int bytes_per_sector;
-    unsigned int sectors_per_cluster;
-    unsigned int sectors_of_bootsector;
-    unsigned int numbers_of_fats;
-    unsigned int sector_of_RDET;
-    unsigned int sector_per_FAT;
-    unsigned int first_sector_of_data;
-    BYTE* FAT;
-    BYTE* BootSector;
+struct atribute
+{
+	int read_only;
+	int hidden;
+	int system;
+	int vollabel;
+	int directory;
+	int archive;
 };
 
-int64_t getValue(BYTE* sector, int offset, int number);
-void readTypeofSystem(BYTE* table);
-FAT32 getValues(LPCWSTR drive);
-void printBootSector(FAT32 f);
-int ReadSector(LPCWSTR drive, int readPoint, BYTE sector[512]);
-void printSector(BYTE* sector);
+int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512]);
+void tohex(BYTE data[][COL], vector<vector<string>>& a);
+string typeofFAT(vector<vector<string>> a);
+bool isNumber(const string& str);
+long int docbyte(vector<vector<string>> a, int n, int m, int sobytecandoc);
+void readBootSector(vector<vector<string>> hexarr);
+void readFAT(vector<vector<string>> hexarr);
+void readRDET(int SRDET);
+string hex2ascii(const string& in, string& out);
+unsigned char hexval(unsigned char c);
+void readSDET(int SRDET);
+
+
