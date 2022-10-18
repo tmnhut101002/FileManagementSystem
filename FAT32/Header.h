@@ -7,6 +7,16 @@
 #include <iomanip>
 using namespace std;
 
+struct atribute
+{
+    int read_only;
+    int hidden;
+    int system;
+    int vollabel;
+    int directory;
+    int archive;
+};
+
 struct FAT32 {
     LPCWSTR drive;
     unsigned int bytes_per_sector;
