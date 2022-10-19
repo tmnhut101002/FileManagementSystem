@@ -3,11 +3,11 @@
 int main(int argc, char** argv)
 {
     boolean quit = FALSE;
-    cout << "Note: " << endl;
-    cout << "1. Our permanant disk which will be read below is E: from the USB." << endl;
-    cout << "   Make sure your USB is E : and formated with FAT32 file system." << endl;
-    cout << "2. Especially you must have files in your USB, if not it will affect the result of the output of RDET/SRDET reading file." << endl;
-    cout << "   This will lead to unexpected output." << endl;
+    cout << "Luu y: " << endl;
+    cout << "1. O dia USB duoc doc boi code ben duoi la o E:" << endl;
+    cout << "   Hay chac chan rang USB cua ban la E: va duoc format FAT32." << endl;
+    cout << "2. Luu y rang USB phai co file" << endl;
+    cout << "   Neu khong se anh huong den ket qua dau ra." << endl;
 
     while (!quit)
     {
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
             BYTE sector[512];
             BYTE temp[100][100];
             vector<vector<string>> hexarr;
-            ReadSector(L"\\\\.\\E:", 0, sector);
+            ReadSector(L"\\\\.\\F:", 0, sector);
             for (int i = 0; i < 32; i++)
             {
                 for (int j = 0; j < 16; j++)
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
             BYTE temp1[100][100];
             vector<vector<string>> hexarr1;
 
-            ReadSector(L"\\\\.\\E:", SB, sector1);
+            ReadSector(L"\\\\.\\F:", SB, sector1);
             for (int i = 0; i < 32; i++)
             {
                 for (int j = 0; j < 16; j++)

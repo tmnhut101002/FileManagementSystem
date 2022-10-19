@@ -300,7 +300,7 @@ void readFile(unsigned int start, int number)
             if (number <= 512)
             {
                 BYTE sector[512];
-                ReadSector(L"\\\\.\\E:", start + k, sector);
+                ReadSector(L"\\\\.\\F:", start + k, sector);
                 string line = toString(sector, 0x00, number);
                 cout << "\t" << line << endl;
                 number = number - 512;
@@ -308,7 +308,7 @@ void readFile(unsigned int start, int number)
             else
             {
                 BYTE sector[512];
-                ReadSector(L"\\\\.\\E:", start + k, sector);
+                ReadSector(L"\\\\.\\F:", start + k, sector);
                 string line = toString(sector, 0x00, 512);
                 cout << "\t" << line << endl;
                 number = number - 512;
@@ -334,7 +334,7 @@ void readRDET(int SRDET)
     {
         bool checkend = false;
         BYTE sector[512];
-        ReadSector(L"\\\\.\\E:", SRDET + k, sector);
+        ReadSector(L"\\\\.\\F:", SRDET + k, sector);
         for (int i = 0; i < 512; i = i + 32)
         {
             if (sector[i] == 0xe5)
@@ -575,7 +575,7 @@ void readSDET(int SRDET)
     {
         bool checkend = false;
         BYTE sector[512];
-        ReadSector(L"\\\\.\\E:", SRDET + k, sector);
+        ReadSector(L"\\\\.\\F:", SRDET + k, sector);
         for (int i = 64; i < 512; i = i + 32)
         {
             if (sector[i] == 0xe5)
@@ -824,23 +824,23 @@ void readBootSector(vector<vector<string>> hexarr)
         cout << "Kich thuoc bang FAT: SF = " << docbyte(hexarr, 4, 2, 4) << endl;
         SF = docbyte(hexarr, 4, 2, 4);
     }
-    cout << "So byte cho 1 sector: " << docbyte(hexarr, 11, 0, 2) << endl;
+    cout << "So byte cho 1 sector: " << docbyte(hexarr, 11, 0, 2) << " bytes" << endl;
     spc = docbyte(hexarr, 13, 0, 1);
-    cout << "So sector cho 1 cluster: " << docbyte(hexarr, 13, 0, 1) << endl;
+    cout << "So sector cho 1 cluster: " << docbyte(hexarr, 13, 0, 1) << " sector" << endl;
     cout << "So sector tai vung boot sector: SB = " << docbyte(hexarr, 14, 0, 2) << endl;
     SB = docbyte(hexarr, 14, 0, 2);
     cout << "So bang FAT: NF = " << docbyte(hexarr, 0, 1, 1) << endl;
     NF = docbyte(hexarr, 0, 1, 1);
-    cout << "So sector cua RDET: " << docbyte(hexarr, 1, 1, 2) * 32 / docbyte(hexarr, 11, 0, 2) << endl;
+    cout << "So sector cua RDET: " << docbyte(hexarr, 1, 1, 2) * 32 / docbyte(hexarr, 11, 0, 2) << " sector" << endl;
     SRDET = SB + SF * NF;
     if (docbyte(hexarr, 3, 1, 2) != 0)
     {
-        cout << "Kich thuoc volume: SV = " << docbyte(hexarr, 3, 1, 2) << endl;
+        cout << "Kich thuoc volume: SV = " << docbyte(hexarr, 3, 1, 2) << " sector = " << docbyte(hexarr, 3, 1, 2) / 2048 << "MB" << endl;
         SV = docbyte(hexarr, 3, 1, 2);
     }
     else
     {
-        cout << "Kich thuoc volume: SV = " << docbyte(hexarr, 0, 2, 4) << endl;
+        cout << "Kich thuoc volume: SV = " << docbyte(hexarr, 0, 2, 4) << " sector = " << docbyte(hexarr, 0, 2, 4) / 2048 << "MB" << endl;
         SV = docbyte(hexarr, 0, 2, 4);
     }
     cout << "Sector dau tien cua bang FAT1: " << SB << endl;

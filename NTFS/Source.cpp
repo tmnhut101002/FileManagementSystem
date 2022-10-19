@@ -37,7 +37,7 @@ int ReadSector(LPCWSTR drive, int readPoint, BYTE*& sector)
     }
     else
     {
-        cout << "Doc thanh cong !!!" << endl;
+        cout << "Doc thanh cong. Sau day la thong tin o dia: " << endl;
         cout << endl;
         return 1;
     }
@@ -73,7 +73,7 @@ void ReadSect2(LPCWSTR disk, BYTE*& DATA, unsigned int _nsect)
 }
 
 // Lấy number bytes từ vị trí offset
-int64_t Get_Bytes(BYTE* sector, int offset, int number)
+int64_t toNumber(BYTE* sector, int offset, int number)
 {
     int64_t k = 0;
     memcpy(&k, sector + offset, number);
@@ -106,7 +106,7 @@ string toBinary(int n)
 
 int Read_Entry_INFORMATION(BYTE* Entry, int start)
 {
-    int status = Get_Bytes(Entry, start + 56, 4);
+    int status = toNumber(Entry, start + 56, 4);
     string bin = toBinary(status);
     for (int i = bin.length() - 1; i >= 0; i--)
     {
@@ -128,7 +128,7 @@ int Read_Entry_INFORMATION(BYTE* Entry, int start)
     cout << "Attribute $STANDARD_INFORMATION" << endl;
 
     // Byte thứ 4 đến 7, Kích thước của attribute
-    int size = Get_Bytes(Entry, start + 4, 4);
+    int size = toNumber(Entry, start + 4, 4);
     cout << "\t- Length of attribute (include header): " << size << endl;
     cout << "\t- Status Attribute of File: " << bin << endl;
     for (int i = bin.length() - 1; i >= 0; i--)
@@ -156,14 +156,14 @@ int Read_Entry_INFORMATION(BYTE* Entry, int start)
 int Read_Entry_FILE_NAME(BYTE* Entry, int start, int ID)
 {
     cout << "Attribute $FILE_NAME" << endl;
-    int size = Get_Bytes(Entry, start + 4, 4);
+    int size = toNumber(Entry, start + 4, 4);
     cout << "\t- Length of attribute (include header): " << size << endl;
-    int parent_file = Get_Bytes(Entry, start + 24, 6);
+    int parent_file = toNumber(Entry, start + 24, 6);
     cout << "\t- Parent file: " << parent_file << endl;
 
     parentID.push_back(parent_file);
 
-    int lengthName = Get_Bytes(Entry, start + 88, 1);
+    int lengthName = toNumber(Entry, start + 88, 1);
     cout << "\t- Length of name file: " << lengthName << endl;
     string name = toString(Entry, start + 90, lengthName * 2);
     cout << "\t- Name of file: " << name << endl;
@@ -200,17 +200,17 @@ int Read_Entry_FILE_NAME(BYTE* Entry, int start, int ID)
 void Read_Entry_DATA(BYTE* Entry, int start)
 {
     cout << "Attribute $DATA" << endl;
-    int size = Get_Bytes(Entry, start + 4, 4);
+    int size = toNumber(Entry, start + 4, 4);
     cout << "\t- Length of attribute (include header): " << size << endl;
-    int sizeFile = Get_Bytes(Entry, start + 16, 4);
+    int sizeFile = toNumber(Entry, start + 16, 4);
     cout << "\t- Size of file: " << sizeFile << endl;
 
-    int type = Get_Bytes(Entry, start + 8, 1);
+    int type = toNumber(Entry, start + 8, 1);
     if (type == 0 && chk == true)
     {
         cout << "\t\t=> Resident" << endl;
-        int cont_Size = Get_Bytes(Entry, start + 16, 4);
-        int cont_Start = Get_Bytes(Entry, start + 20, 2);
+        int cont_Size = toNumber(Entry, start + 16, 4);
+        int cont_Start = toNumber(Entry, start + 20, 2);
         string content = toString(Entry, start + cont_Start, cont_Size);
         cout << endl;
         cout << "Content: " << content << endl;
@@ -274,26 +274,33 @@ void Print_Folder_Tree(int a, int tab, int vt)
 }
 
 // Đọc Bios Parameter Block
-void Read_BPB(BYTE* sector, LPCWSTR disk)
-{
-    unsigned int bytes_per_sector = Get_Bytes(sector, 0x0B, 2); // Bytes Per Sector
-    unsigned int sectors_per_cluster = Get_Bytes(sector, 0x0D, 1); // Sectors Per Cluster
-    unsigned int sectors_per_track = Get_Bytes(sector, 0x18, 2); // Sectors Per Track
-    unsigned int total_sectors = Get_Bytes(sector, 0x28, 8); // Total Sectors
-    unsigned int MFTStart = Get_Bytes(sector, 0x30, 8); // Cluster start of MFT
-    unsigned int MFTMirrorStart = Get_Bytes(sector, 0x38, 8); // Cluster start of MFTMirror
 
-    cout << endl;
-    cout << "Bytes Per Sector : " << bytes_per_sector << endl;
-    cout << "Sectors Per Cluster : " << sectors_per_cluster << endl;
-    cout << "Sectors Per Track : " << sectors_per_track << endl;
-    cout << "Total Sectors : " << total_sectors << endl;
-    cout << "Cluster start of MFT : " << MFTStart << endl;
-    cout << "Cluster start of MFTMirror : " << MFTMirrorStart << endl;
+NTFS readPBS (BYTE* sector)
+{
+    NTFS n;
+    n.bytes_per_sector = toNumber(sector, 0x0B, 2); // Bytes Per Sector
+    n.sectors_per_cluster = toNumber(sector, 0x0D, 1); // Sectors Per Cluster
+    n.sectors_per_track = toNumber(sector, 0x18, 2); // Sectors Per Track
+    n.total_sectors = toNumber(sector, 0x28, 8); // Total Sectors
+    n.MFTStart = toNumber(sector, 0x30, 8); // Cluster start of MFT
+    n.MFTMirror_Start = toNumber(sector, 0x38, 8); // Cluster start of MFTMirror
+
+    return n;
+}
+
+void printPBS(BYTE* sector, LPCWSTR disk, NTFS n)
+{
+    cout << "\n\t\t PARTITION BOOT SECTOR\n" << endl;
+    cout << "So byte cua 1 sector: " << n.bytes_per_sector << " bytes" << endl;
+    cout << "So sector cua 1 cluster: " << n.sectors_per_cluster << endl;
+    cout << "So sector moi track: " << n.sectors_per_track << endl;
+    cout << "Kich thuoc cua dia: " << n.total_sectors << " sector = " << n.total_sectors / 2048 << "MB" << endl;
+    cout << "Cluster bat dau cua MFT: " << n.MFTStart << endl;
+    cout << "Cluster bat dau cua MFT du phong: " << n.MFTMirror_Start << endl;
     cout << endl;
 
     // Đọc $MFT Entry
-    read_MFT(MFTStart, sectors_per_cluster, disk);
+    read_MFT(n.MFTStart, n.sectors_per_cluster, disk);
 }
 
 void read_MFT(unsigned int MFTStart, unsigned int sectors_per_cluster, LPCWSTR disk)
@@ -303,37 +310,37 @@ void read_MFT(unsigned int MFTStart, unsigned int sectors_per_cluster, LPCWSTR d
     ReadSect2(disk, MFT, MFTStart);
 
     // INFORMATION
-    int Entry_in4 = Get_Bytes(MFT, 0x014, 2);
+    int Entry_in4 = toNumber(MFT, 0x014, 2);
     cout << "Attribute $INFORMATION Entry starts at: " << Entry_in4 << endl;
 
-    int len_in4 = Get_Bytes(MFT, 0x048, 4);
+    int len_in4 = toNumber(MFT, 0x048, 4);
     cout << "Length of INFOR Entry: " << len_in4 << endl;
 
     // FILE NAME
     int Entry_Name = Entry_in4 + len_in4;
     cout << "Attribute $FILE NAME Entry starts at: " << Entry_Name << endl;
 
-    int len_Name = Get_Bytes(MFT, 0x09C, 4);
+    int len_Name = toNumber(MFT, 0x09C, 4);
     cout << "Length of $FILE NAME Entry: " << len_Name << endl;
 
     // DATA
-    int tmp = Get_Bytes(MFT, 0x108, 4);
+    int tmp = toNumber(MFT, 0x108, 4);
     int Entry_Data = 0;
     if (tmp == 64) {
-        Entry_Data = Entry_Name + len_Name + Get_Bytes(MFT, 0x10C, 4);
+        Entry_Data = Entry_Name + len_Name + toNumber(MFT, 0x10C, 4);
         cout << "Attribute $DATA Entry starts at: " << Entry_Data << endl;
-        int len_data = Get_Bytes(MFT, 0x134, 4);
+        int len_data = toNumber(MFT, 0x134, 4);
         cout << "Length of DATA Entry: " << len_data << endl;
     }
     else {
         Entry_Data = Entry_Name + len_Name;
         cout << "Attribute $DATA Entry starts at: " << Entry_Data << endl;
-        int len_data = Get_Bytes(MFT, 0x10C, 4);
+        int len_data = toNumber(MFT, 0x10C, 4);
         cout << "Length of DATA Entry: " << len_data << endl;
     }
 
     // main DATA
-    unsigned int len_MFT = MFTStart + (Get_Bytes(MFT, Entry_Data + 24, 8) + 1) * 8;
+    unsigned int len_MFT = MFTStart + (toNumber(MFT, Entry_Data + 24, 8) + 1) * 8;
     cout << "Number sector in MFT is: " << len_MFT - MFTStart << endl;
     cout << endl;
 
@@ -351,29 +358,29 @@ void folder_Tree(unsigned int len_MFT, unsigned int MFTStart, LPCWSTR disk)
         if (toString(currentEntry, 0x00, 4) == "FILE")
         {
             chk = false;
-            int ID = Get_Bytes(currentEntry, 0x02C, 4);
+            int ID = toNumber(currentEntry, 0x02C, 4);
             if (ID > 38)
             {
                 cout << endl;
                 cout << endl;
                 cout << "ID File: " << ID << endl;
-                int startInfor = Get_Bytes(currentEntry, 0x014, 2);
+                int startInfor = toNumber(currentEntry, 0x014, 2);
                 int sizeInfor = Read_Entry_INFORMATION(currentEntry, startInfor);
                 if (sizeInfor == -1)
                     continue;
                 int startName = sizeInfor + 56;
                 int sizeName = Read_Entry_FILE_NAME(currentEntry, startName, ID);
                 int startData = startName + sizeName;
-                if (Get_Bytes(currentEntry, startData, 4) == 64) //Nếu là $OBJECT
+                if (toNumber(currentEntry, startData, 4) == 64) //Nếu là $OBJECT
                 {
 
-                    int len_obj = Get_Bytes(currentEntry, startData + 4, 4);
+                    int len_obj = toNumber(currentEntry, startData + 4, 4);
                     startData += len_obj;
                     Read_Entry_DATA(currentEntry, startData);
                 }
                 else
                 {
-                    while (Get_Bytes(currentEntry, startData, 4) != 128) // Tìm sector dấu hiệu của DATA
+                    while (toNumber(currentEntry, startData, 4) != 128) // Tìm sector dấu hiệu của DATA
                     {
                         startData += 4;
                     }

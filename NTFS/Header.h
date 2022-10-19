@@ -10,16 +10,28 @@
 #include<string>
 using namespace std;
 
+struct NTFS
+{
+    unsigned int bytes_per_sector;
+    unsigned int sectors_per_cluster;
+    unsigned int sectors_per_track;
+    unsigned int numbers_of_head;
+    int64_t total_sectors;
+    int64_t MFTStart;
+    int64_t MFTMirror_Start;
+};
+
 // Đọc sector, trả về trạng thái : 1 - đọc thành công, 0 - đọc thất bại
 int ReadSector(LPCWSTR drive, int readPoint, BYTE*& sector);
 
 void ReadSect2(LPCWSTR disk, BYTE*& DATA, unsigned int _nsect);
 
 // Lấy "number" bytes từ vị trí "offset"
-int64_t Get_Bytes(BYTE* sector, int offset, int number);
+int64_t toNumber(BYTE* sector, int offset, int number);
 
 // Đọc Bios Parameter Block
-void Read_BPB(BYTE* sector, LPCWSTR disk);
+NTFS readPBS(BYTE* sector);
+void printPBS(BYTE* sector, LPCWSTR disk);
 
 // Chuyển "number" bytes DATA từ vị trí "offset" thành string
 string toString(BYTE* DATA, int offset, int number);
@@ -46,7 +58,7 @@ string get_nameFile(int id);
 void Print_Folder_Tree(int a, int tab, int vt);
 
 // Đọc Bios Parameter Block
-void Read_BPB(BYTE* sector, LPCWSTR disk);
+void printPBS(BYTE* sector, LPCWSTR disk, NTFS n);
 
 // Đọc $MFT Entry
 void read_MFT(unsigned int MFTStart, unsigned int sectors_per_cluster, LPCWSTR disk);
