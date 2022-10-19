@@ -851,7 +851,7 @@ void readBootSector(vector<vector<string>> hexarr)
 void readFAT(vector<vector<string>> hexarr)
 {
     cout << endl;
-    cout << "\t\t\tBOOT SECTOR INFORMATION";
+    cout << "\t\t\tBOOT SECTOR";
     cout << endl;
     readBootSector(hexarr);
 }
