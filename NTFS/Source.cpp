@@ -6,7 +6,7 @@ vector<string> nameFile;
 bool chk = false;
 
 
-// Đọc sector, trả về trạng thái : 1 - đọc thành công, 0 - đọc thất bại
+// Doc sector
 int ReadSector(LPCWSTR drive, int readPoint, BYTE*& sector)
 {
     int retCode = 0;
@@ -72,7 +72,7 @@ void ReadSect2(LPCWSTR disk, BYTE*& DATA, unsigned int _nsect)
     }
 }
 
-// Lấy number bytes từ vị trí offset
+//Doc number byte
 int64_t toNumber(BYTE* sector, int offset, int number)
 {
     int64_t k = 0;
@@ -80,7 +80,7 @@ int64_t toNumber(BYTE* sector, int offset, int number)
     return k;
 }
 
-// Chuyển "number" bytes DATA từ vị trí "offset" thành string
+//Chuyen number byte sang string
 string toString(BYTE* DATA, int offset, int number)
 {
     char* tmp = new char[number + 1];
@@ -93,7 +93,6 @@ string toString(BYTE* DATA, int offset, int number)
     return s;
 }
 
-//Chuyển hệ 10 sang hệ 2
 string toBinary(int n)
 {
     string r;
@@ -104,7 +103,7 @@ string toBinary(int n)
     return r;
 }
 
-int Read_Entry_INFORMATION(BYTE* Entry, int start)
+int readEntryInfo(BYTE* Entry, int start)
 {
     int status = toNumber(Entry, start + 56, 4);
     string bin = toBinary(status);
@@ -127,7 +126,7 @@ int Read_Entry_INFORMATION(BYTE* Entry, int start)
     }
     cout << "Attribute $STANDARD_INFORMATION" << endl;
 
-    // Byte thứ 4 đến 7, Kích thước của attribute
+    // Byte 4 den byte 7, kich thuoc cua attribute
     int size = toNumber(Entry, start + 4, 4);
     cout << "\t- Length of attribute (include header): " << size << endl;
     cout << "\t- Status Attribute of File: " << bin << endl;
@@ -148,12 +147,12 @@ int Read_Entry_INFORMATION(BYTE* Entry, int start)
     }
     cout << endl;
 
-    // trả về size của attribute
+    //tra ve size cua attribute
     return size;
 }
 
-// Đọc thông tin của Attribute $FILE_NAME
-int Read_Entry_FILE_NAME(BYTE* Entry, int start, int ID)
+//Attribute $FILE_NAME
+int readEntryFileName(BYTE* Entry, int start, int ID)
 {
     cout << "Attribute $FILE_NAME" << endl;
     int size = toNumber(Entry, start + 4, 4);
@@ -168,7 +167,7 @@ int Read_Entry_FILE_NAME(BYTE* Entry, int start, int ID)
     string name = toString(Entry, start + 90, lengthName * 2);
     cout << "\t- Name of file: " << name << endl;
 
-    //Lấy đuôi mở rộng
+    //Doc phan mo rong
     string exts = "";
     for (int i = name.length() - 1; i >= name.length() - 5; i--)
     {
@@ -178,7 +177,6 @@ int Read_Entry_FILE_NAME(BYTE* Entry, int start, int ID)
     }
     reverse(exts.begin(), exts.end());
 
-    //Hỗ trợ đọc file
     if (exts == "doc" || exts == "docx")
         cout << "\t\t\t => Use Microsoft Office Word to open!\n";
     if (exts == "ppt" || exts == "pptx")
@@ -197,7 +195,7 @@ int Read_Entry_FILE_NAME(BYTE* Entry, int start, int ID)
     return size;
 }
 
-void Read_Entry_DATA(BYTE* Entry, int start)
+void readEntryData(BYTE* Entry, int start)
 {
     cout << "Attribute $DATA" << endl;
     int size = toNumber(Entry, start + 4, 4);
@@ -220,17 +218,17 @@ void Read_Entry_DATA(BYTE* Entry, int start)
     cout << endl;
 }
 
-void print_Tab(int tab)
+void printTab(int tab)
 {
     for (int i = 0; i < tab; i++)
         cout << "\t";
 }
 
-// lấy tên file trong mảng nameFile có ID file là "id"
-string get_nameFile(int id)
+//tenfile trong nameFile co ID file "id"
+string getnameFile(int id)
 {
     string kq = "";
-    // tìm vị trí xuất hiện của id trong fileID
+    // vi tri xuat hien cua id trong fileID
     int vt = -1;
     for (int i = 0; i < fileID.size(); i++)
         if (fileID[i] == id)
@@ -244,20 +242,19 @@ string get_nameFile(int id)
     return kq;
 }
 
-// Hàm đệ quy in ra cây thư mục
-void Print_Folder_Tree(int a, int tab, int vt)
+// In cay thu muc
+void printFolderTree(int a, int tab, int vt)
 {
     tab++;
-    print_Tab(tab);
-    cout << get_nameFile(a) << endl;
+    printTab(tab);
+    cout << getnameFile(a) << endl;
 
-    // cho ID với parents = -1
     fileID[vt] = -1;
     parentID[vt] = -1;
 
     vector<int> child;
     vector<int> VT;
-    // tìm số lượng những thằng con của a
+
     for (int j = 0; j < fileID.size(); j++)
         if (parentID[j] == a)
         {
@@ -268,12 +265,11 @@ void Print_Folder_Tree(int a, int tab, int vt)
     if (child.size() == 0)
         return;
 
-    // in ra những thằng con của từng phần tử trong child
     for (int i = 0; i < child.size(); i++)
-        Print_Folder_Tree(child[i], tab, VT[i]);
+        printFolderTree(child[i], tab, VT[i]);
 }
 
-// Đọc Bios Parameter Block
+//Doc Partition Boot Sector
 
 NTFS readPBS (BYTE* sector)
 {
@@ -299,11 +295,11 @@ void printPBS(BYTE* sector, LPCWSTR disk, NTFS n)
     cout << "Cluster bat dau cua MFT du phong: " << n.MFTMirror_Start << endl;
     cout << endl;
 
-    // Đọc $MFT Entry
-    read_MFT(n.MFTStart, n.sectors_per_cluster, disk);
+    //Doc MFT entry
+    readMFT(n.MFTStart, n.sectors_per_cluster, disk);
 }
 
-void read_MFT(unsigned int MFTStart, unsigned int sectors_per_cluster, LPCWSTR disk)
+void readMFT(unsigned int MFTStart, unsigned int sectors_per_cluster, LPCWSTR disk)
 {
     BYTE* MFT = new BYTE[512];
     MFTStart *= sectors_per_cluster;
@@ -344,11 +340,11 @@ void read_MFT(unsigned int MFTStart, unsigned int sectors_per_cluster, LPCWSTR d
     cout << "Number sector in MFT is: " << len_MFT - MFTStart << endl;
     cout << endl;
 
-    // xử lí cây thư mục
-    folder_Tree(len_MFT, MFTStart, disk);
+    // cay thu muc
+    folderTree(len_MFT, MFTStart, disk);
 }
 
-void folder_Tree(unsigned int len_MFT, unsigned int MFTStart, LPCWSTR disk)
+void folderTree(unsigned int len_MFT, unsigned int MFTStart, LPCWSTR disk)
 {
     for (int i = 2; i < len_MFT - MFTStart; i += 2)
     {
@@ -365,27 +361,27 @@ void folder_Tree(unsigned int len_MFT, unsigned int MFTStart, LPCWSTR disk)
                 cout << endl;
                 cout << "ID File: " << ID << endl;
                 int startInfor = toNumber(currentEntry, 0x014, 2);
-                int sizeInfor = Read_Entry_INFORMATION(currentEntry, startInfor);
+                int sizeInfor = readEntryInfo(currentEntry, startInfor);
                 if (sizeInfor == -1)
                     continue;
                 int startName = sizeInfor + 56;
-                int sizeName = Read_Entry_FILE_NAME(currentEntry, startName, ID);
+                int sizeName = readEntryFileName(currentEntry, startName, ID);
                 int startData = startName + sizeName;
-                if (toNumber(currentEntry, startData, 4) == 64) //Nếu là $OBJECT
+                if (toNumber(currentEntry, startData, 4) == 64) //$OBJECT
                 {
 
                     int len_obj = toNumber(currentEntry, startData + 4, 4);
                     startData += len_obj;
-                    Read_Entry_DATA(currentEntry, startData);
+                    readEntryData(currentEntry, startData);
                 }
                 else
                 {
-                    while (toNumber(currentEntry, startData, 4) != 128) // Tìm sector dấu hiệu của DATA
+                    while (toNumber(currentEntry, startData, 4) != 128) // tim sector cua DATA
                     {
                         startData += 4;
                     }
 
-                    Read_Entry_DATA(currentEntry, startData);
+                    readEntryData(currentEntry, startData);
                 }
 
                 fileID.push_back(ID);
@@ -394,16 +390,16 @@ void folder_Tree(unsigned int len_MFT, unsigned int MFTStart, LPCWSTR disk)
         delete currentEntry;
     }
 
-    // in ra cây thư mục
+    // in cay thu muc
     cout << "---------------------------------------------------------" << endl;
     cout << "\t \t \t CAY THU MUC" << endl;
     for (int i = 0; i < fileID.size(); i++)
         if (fileID[i] != -1 && parentID[i] != -1)
-            Print_Folder_Tree(fileID[i], -1, i);
+            printFolderTree(fileID[i], -1, i);
 }
 
-// In bảng ra sector
-void Print_Sector(BYTE* sector)
+// In bang sector
+void printSector(BYTE* sector)
 {
     int count = 0;
     int num = 0;

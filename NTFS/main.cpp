@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv)
 {
-    // xử lí nhập tên ổ đĩa
+    //nhap ten o dia
     wstring disk_name;
     cout << "Nhap ten o dia de thuc hien doc thong tin." << endl;
     cout << "(Vi du: C, E, F, G) : " << endl;
@@ -10,20 +10,19 @@ int main(int argc, char** argv)
     disk_name = L"\\\\.\\" + disk_name + L":";
     LPCWSTR drive = disk_name.c_str();
     NTFS n;
-    // xử lí đọc
+    //doc sector
     BYTE* sector = new BYTE[512];
     int flag = ReadSector(drive, 0, sector);
     n = readPBS(sector);
-    // nếu đọc thành công
+
     if (flag == 1)
     {
-        // in ra bảng sector vừa đọc
-        Print_Sector(sector);
+        //in bang sector vua doc
+        printSector(sector);
 
-        // Đọc Bios Parameter Block
+        //doc Partition Boot Sector
         printPBS(sector, drive, n);
 
-        // giải phóng bộ nhớ
         delete[] sector;
     }
     else
